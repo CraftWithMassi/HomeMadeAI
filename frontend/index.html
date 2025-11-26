@@ -55,6 +55,10 @@
         overflow: hidden;
         width: 100%;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       }
       /* Use CSS custom property for dynamic viewport height */
       :root {
@@ -127,19 +131,44 @@
       .chat-scroll::-webkit-scrollbar-thumb:hover {
         background: rgba(148, 163, 184, 0.6);
       }
+
+      /* Floating bubble container */
+      .chat-bubble {
+        width: 90%;
+        max-width: 500px;
+        height: 85vh;
+        max-height: 700px;
+        min-height: 500px;
+        background: #1e293b;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+
+      @media (max-width: 640px) {
+        .chat-bubble {
+          width: 95%;
+          height: 90vh;
+          max-height: none;
+          min-height: 400px;
+          border-radius: 20px;
+        }
+      }
     </style>
   </head>
 
-  <body class="bg-slate-950 text-slate-100 overflow-hidden">
+  <body class="text-slate-100 overflow-hidden">
     <div
-      class="h-full w-full bg-slate-900 flex flex-col overflow-hidden"
-      style="max-height: 100%; min-height: 0;"
+      class="chat-bubble bg-slate-900 flex flex-col overflow-hidden"
     >
       <!-- Header -->
       <header
-        class="px-3 py-2 border-b border-slate-800/50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm shrink-0"
+        class="px-4 py-3 border-b border-slate-800/50 flex items-center justify-center bg-gradient-to-r from-slate-800 to-slate-900 shrink-0"
       >
-        <h1 class="text-sm font-semibold tracking-tight text-slate-100">
+        <h1 class="text-base font-semibold tracking-tight text-slate-100">
           Home Made AI
         </h1>
       </header>
@@ -147,17 +176,17 @@
       <!-- Chat Area -->
       <main
         id="chat-container"
-        class="flex-1 overflow-y-auto chat-scroll px-3 py-2 space-y-2 text-[14px] min-h-0"
+        class="flex-1 overflow-y-auto chat-scroll px-4 py-3 space-y-3 text-[14px] min-h-0"
       >
         <!-- Initial assistant message -->
-        <div class="flex items-start gap-2">
+        <div class="flex items-start gap-2.5">
           <div
-            class="mt-0.5 w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-semibold text-slate-300 shrink-0"
+            class="mt-0.5 w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300 shrink-0"
           >
             AI
           </div>
           <div
-            class="max-w-[85%] rounded-xl rounded-tl-sm bg-slate-800 px-3 py-2"
+            class="max-w-[85%] rounded-2xl rounded-tl-sm bg-slate-800 px-3 py-2.5"
           >
             <p class="leading-relaxed text-slate-100">
               Hi! I'm your AI assistant. Ask me anything, and I'll do my best to
@@ -170,15 +199,15 @@
       <!-- Typing indicator / loader -->
       <div
         id="typing-indicator"
-        class="px-3 pb-1 text-[11px] text-slate-400 hidden shrink-0"
+        class="px-4 pb-2 text-xs text-slate-400 hidden shrink-0"
       >
-        <div class="flex items-center gap-1.5">
-          <span class="relative flex h-1.5 w-1.5">
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2 w-2">
             <span
               class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"
             ></span>
             <span
-              class="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"
+              class="relative inline-flex rounded-full h-2 w-2 bg-primary"
             ></span>
           </span>
           <span>AI is thinking...</span>
@@ -187,24 +216,24 @@
 
       <!-- Input Area -->
       <footer
-        class="px-3 pt-2 pb-2 border-t border-slate-800/50 bg-slate-900 shrink-0"
-        style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));"
+        class="px-4 pt-3 pb-3 border-t border-slate-800/50 bg-slate-900 shrink-0"
+        style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));"
       >
-        <form id="chat-form" class="flex items-end gap-1.5">
+        <form id="chat-form" class="flex items-end gap-2">
           <div
-            class="flex-1 rounded-xl bg-slate-800 border border-slate-700/50 focus-within:border-slate-600 transition-all"
+            class="flex-1 rounded-2xl bg-slate-800 border border-slate-700/50 focus-within:border-primary/50 transition-all"
           >
             <textarea
               id="user-input"
               rows="1"
               placeholder="Message HomeMade AI..."
-              class="w-full resize-none bg-transparent border-0 outline-none text-[14px] px-3 py-2 placeholder:text-slate-500 text-slate-100"
+              class="w-full resize-none bg-transparent border-0 outline-none text-[14px] px-4 py-2.5 placeholder:text-slate-500 text-slate-100"
             ></textarea>
           </div>
           <button
             id="send-button"
             type="submit"
-            class="shrink-0 inline-flex items-center justify-center rounded-xl bg-primary hover:bg-primary-dark disabled:bg-slate-700 disabled:text-slate-400 text-white transition-colors w-9 h-9"
+            class="shrink-0 inline-flex items-center justify-center rounded-2xl bg-primary hover:bg-primary-dark disabled:bg-slate-700 disabled:text-slate-400 text-white transition-colors w-10 h-10 shadow-lg shadow-primary/20"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -212,7 +241,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              class="w-4 h-4"
+              class="w-5 h-5"
             >
               <path
                 d="M22 2L11 13"
@@ -303,13 +332,13 @@
         const isUser = from === "user";
 
         const wrapper = document.createElement("div");
-        wrapper.className = `flex items-start gap-2 ${
+        wrapper.className = `flex items-start gap-2.5 ${
           isUser ? "justify-end" : ""
         }`;
 
         const avatar = document.createElement("div");
         avatar.className =
-          "mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0";
+          "mt-0.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0";
         avatar.textContent = isUser ? "You" : "AI";
         if (isUser) {
           avatar.classList.add(
@@ -323,7 +352,7 @@
 
         const bubble = document.createElement("div");
         bubble.className =
-          "max-w-[85%] rounded-xl px-3 py-2 text-[14px] leading-relaxed prose";
+          "max-w-[85%] rounded-2xl px-3 py-2.5 text-[14px] leading-relaxed prose";
 
         if (isUser) {
           bubble.classList.add(
@@ -419,18 +448,7 @@
       // Auto-grow textarea
       userInput.addEventListener("input", () => {
         userInput.style.height = "auto";
-        userInput.style.height = Math.min(userInput.scrollHeight, 100) + "px";
-        // Scroll input into view on mobile when typing
-        setTimeout(() => {
-          userInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }, 100);
-      });
-      
-      // Ensure input is visible when focused (mobile)
-      userInput.addEventListener("focus", () => {
-        setTimeout(() => {
-          userInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }, 300);
+        userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
       });
 
       // Send on Enter (but allow Shift+Enter for newline)
