@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#6366F1",
+                dark: "#4F46E5",
+                light: "#E0E7FF",
+              },
+              surface: "#0F172A",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        /* Markdown/Prose styling */
+.prose p {
+  margin: 0.5em 0;
+}
+.prose p:first-child {
+  margin-top: 0;
+}
+.prose p:last-child {
+  margin-bottom: 0;
+}
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin: 1em 0 0.5em;
+  font-weight: 600;
+}
+.prose h1 {
+  font-size: 1.25em;
+}
+.prose h2 {
+  font-size: 1.15em;
+}
+.prose h3 {
+  font-size: 1.1em;
+}
+.prose ul,
+.prose ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.prose code {
+  background: #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.prose pre {
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+      }
+
+      /* Simple custom scrollbar for chat area */
+      .chat-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .chat-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .chat-scroll::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 9999px;
+      }
+      .chat-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.6);
+      }
+    </style>
+  </head>
+
+  <body class="h-screen bg-slate-950 text-slate-100 overflow-hidden">
+    <div
+      class="h-full w-full bg-slate-900 flex flex-col overflow-hidden"
+    >
+      <!-- Header -->
+      <header
+        class="px-4 py-3 border-b border-slate-800/50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm"
+      >
+        <h1 class="text-base font-semibold tracking-tight text-slate-100">
+          Home Made AI
+        </h1>
+      </header>
+
+      <!-- Chat Area -->
+      <main
+        id="chat-container"
+        class="flex-1 overflow-y-auto chat-scroll px-4 py-4 space-y-4 text-[15px]"
+      >
+        <!-- Initial assistant message -->
+        <div class="flex items-start gap-3">
+          <div
+            class="mt-1 w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300 shrink-0"
+          >
+            AI
+          </div>
+          <div
+            class="max-w-[85%] rounded-2xl rounded-tl-sm bg-slate-800 px-4 py-3"
+          >
+            <p class="leading-relaxed text-slate-100">
+              Hi! I'm your AI assistant. Ask me anything, and I'll do my best to
+              help.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <!-- Typing indicator / loader -->
+      <div
+        id="typing-indicator"
+        class="px-4 pb-2 text-xs text-slate-400 hidden"
+      >
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2 w-2">
+            <span
+              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"
+            ></span>
+            <span
+              class="relative inline-flex rounded-full h-2 w-2 bg-primary"
+            ></span>
+          </span>
+          <span>AI is thinking...</span>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <footer
+        class="px-4 pt-3 pb-4 border-t border-slate-800/50 bg-slate-900"
+      >
+        <form id="chat-form" class="flex items-end gap-2">
+          <div
+            class="flex-1 rounded-2xl bg-slate-800 border border-slate-700/50 focus-within:border-slate-600 transition-all"
+          >
+            <textarea
+              id="user-input"
+              rows="1"
+              placeholder="Message HomeMade AI..."
+              class="w-full resize-none bg-transparent border-0 outline-none text-[15px] px-4 py-3 placeholder:text-slate-500 text-slate-100"
+            ></textarea>
+          </div>
+          <button
+            id="send-button"
+            type="submit"
+            class="shrink-0 inline-flex items-center justify-center rounded-2xl bg-primary hover:bg-primary-dark disabled:bg-slate-700 disabled:text-slate-400 text-white transition-colors w-10 h-10"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5"
+            >
+              <path
+                d="M22 2L11 13"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M22 2l-7 20-4-9-9-4 20-7z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </form>
+      </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      const API_URL = "http://localhost:3001/chat"; // adjust if your backend runs elsewhere
+
+      const chatContainer = document.getElementById("chat-container");
+      const chatForm = document.getElementById("chat-form");
+      const userInput = document.getElementById("user-input");
+      const sendButton = document.getElementById("send-button");
+      const typingIndicator = document.getElementById("typing-indicator");
+
+      function appendMessage({ from, text }) {
+        const isUser = from === "user";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = `flex items-start gap-3 ${
+          isUser ? "justify-end" : ""
+        }`;
+
+        const avatar = document.createElement("div");
+        avatar.className =
+          "mt-1 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0";
+        avatar.textContent = isUser ? "You" : "AI";
+        if (isUser) {
+          avatar.classList.add(
+            "bg-slate-700",
+            "text-slate-300",
+            "order-2"
+          );
+        } else {
+          avatar.classList.add("bg-slate-700", "text-slate-300");
+        }
+
+        const bubble = document.createElement("div");
+        bubble.className =
+          "max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed prose";
+
+        if (isUser) {
+          bubble.classList.add(
+            "rounded-tr-sm",
+            "bg-primary",
+            "text-white"
+          );
+        } else {
+          bubble.classList.add(
+            "rounded-tl-sm",
+            "bg-slate-800",
+            "text-slate-100"
+          );
+        }
+
+        // Basic text handling (no markdown parsing, but keeps line breaks)
+        //bubble.textContent = text;
+
+        if (isUser) {
+          wrapper.appendChild(bubble);
+          wrapper.appendChild(avatar);
+          bubble.textContent = text;
+        } else {
+          wrapper.appendChild(avatar);
+          wrapper.appendChild(bubble);
+          bubble.innerHTML = marked.parse(text);
+        }
+
+        chatContainer.appendChild(wrapper);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function setLoading(isLoading) {
+        if (isLoading) {
+          typingIndicator.classList.remove("hidden");
+          sendButton.disabled = true;
+          userInput.disabled = true;
+        } else {
+          typingIndicator.classList.add("hidden");
+          sendButton.disabled = false;
+          userInput.disabled = false;
+          userInput.focus();
+        }
+      }
+
+      async function sendMessage(message) {
+        appendMessage({ from: "user", text: message });
+        setLoading(true);
+
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              `Server error: ${response.status}. ${errorData.details || errorData.error || ""}`
+            );
+          }
+
+          const data = await response.json();
+          const reply = data.reply || "No response from AI.";
+
+          appendMessage({ from: "assistant", text: reply });
+        } catch (error) {
+          console.error(error);
+          const errorMessage = error.message || "Unknown error";
+          appendMessage({
+            from: "assistant",
+            text:
+              "Sorry, there was an error: " + errorMessage +
+              "\n\nMake sure:\n1. Backend is running on http://localhost:3001\n2. GROQ_API_KEY is set in backend/.env\n3. Dependencies are installed (npm install in backend folder)",
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+        userInput.value = "";
+        userInput.style.height = "auto";
+        sendMessage(text);
+      });
+
+      // Auto-grow textarea
+      userInput.addEventListener("input", () => {
+        userInput.style.height = "auto";
+        userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+      });
+
+      // Send on Enter (but allow Shift+Enter for newline)
+      userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          chatForm.dispatchEvent(new Event("submit"));
+        }
+      });
+    </script>
+  </body>
+</html>
+
+
