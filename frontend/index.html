@@ -36,11 +36,25 @@
       * {
         box-sizing: border-box;
       }
-      html, body {
+      html {
         height: 100%;
+        height: 100svh; /* Small viewport height - best for mobile */
+        height: 100dvh; /* Dynamic viewport height - fallback */
         margin: 0;
         padding: 0;
         overflow: hidden;
+        width: 100%;
+      }
+      body {
+        height: 100%;
+        height: 100svh; /* Small viewport height - best for mobile */
+        height: 100dvh; /* Dynamic viewport height - fallback */
+        height: calc(var(--vh, 1vh) * 100); /* JavaScript fallback for older browsers */
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        position: relative;
       }
       /* Use CSS custom property for dynamic viewport height */
       :root {
@@ -116,9 +130,10 @@
     </style>
   </head>
 
-  <body class="bg-slate-950 text-slate-100 overflow-hidden" style="height: calc(var(--vh, 1vh) * 100);">
+  <body class="bg-slate-950 text-slate-100 overflow-hidden">
     <div
       class="h-full w-full bg-slate-900 flex flex-col overflow-hidden"
+      style="max-height: 100%; min-height: 0;"
     >
       <!-- Header -->
       <header
@@ -132,7 +147,7 @@
       <!-- Chat Area -->
       <main
         id="chat-container"
-        class="flex-1 overflow-y-auto chat-scroll px-4 py-4 space-y-4 text-[15px]"
+        class="flex-1 overflow-y-auto chat-scroll px-4 py-4 space-y-4 text-[15px] min-h-0"
       >
         <!-- Initial assistant message -->
         <div class="flex items-start gap-3">
@@ -218,28 +233,63 @@
     <script>
       // Fix viewport height for mobile browsers
       function setViewportHeight() {
-        const vh = window.innerHeight * 0.01;
+        const actualHeight = window.innerHeight;
+        const vh = actualHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
+        
+        // Also set body and html height directly to ensure it works
+        document.body.style.height = `${actualHeight}px`;
+        document.documentElement.style.height = `${actualHeight}px`;
+        
+        // Prevent any overflow
+        document.body.style.maxHeight = `${actualHeight}px`;
+        document.documentElement.style.maxHeight = `${actualHeight}px`;
       }
       
-      // Set initial viewport height
-      setViewportHeight();
+      // Set initial viewport height immediately (before DOM is ready)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setViewportHeight);
+      } else {
+        setViewportHeight();
+      }
+      
+      // Also set after a short delay to catch any initial render issues
+      setTimeout(setViewportHeight, 50);
+      setTimeout(setViewportHeight, 200);
       
       // Update on resize and orientation change
-      window.addEventListener('resize', setViewportHeight);
-      window.addEventListener('orientationchange', () => {
-        setTimeout(setViewportHeight, 100);
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(setViewportHeight, 50);
       });
       
-      // Handle mobile browser address bar show/hide
+      window.addEventListener('orientationchange', () => {
+        setTimeout(setViewportHeight, 150);
+      });
+      
+      // Handle visual viewport changes (mobile browser address bar)
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+          setViewportHeight();
+        });
+        window.visualViewport.addEventListener('scroll', () => {
+          setViewportHeight();
+        });
+      }
+      
+      // Additional mobile-specific handling
       let lastHeight = window.innerHeight;
-      window.addEventListener('resize', () => {
+      const checkHeight = () => {
         const currentHeight = window.innerHeight;
-        if (Math.abs(currentHeight - lastHeight) > 50) {
+        if (Math.abs(currentHeight - lastHeight) > 10) {
           setViewportHeight();
           lastHeight = currentHeight;
         }
-      });
+      };
+      
+      // Check height periodically on mobile
+      setInterval(checkHeight, 200);
 
       const API_URL = "https://homemadeai.onrender.com/chat"; // adjust if your backend runs elsewhere
 
